@@ -117,6 +117,10 @@ wtw:exposesAction a owl:ObjectProperty ; rdfs:comment "Links a resource or an ac
 wtw:actionType a owl:ObjectProperty ; rdfs:range wtw:ActionType ; rdfs:comment "The action type of an action." .
 wtw:hasInput a owl:ObjectProperty ; rdfs:range sh:NodeShape ; rdfs:comment "The input shape of an action." .
 wtw:input a owl:ObjectProperty ; rdfs:comment "The pre-filled input of an action." .
+wtw:locksAction a owl:ObjectProperty ; rdfs:comment "Links a resource or an actor to a locked action on it: shown with its unmet conditions, never offered." .
+wtw:LockedAction a owl:Class ; rdfs:comment "An action that is not valid now, with the unmet conditions that keep it locked." .
+wtw:needs a owl:ObjectProperty ; rdfs:comment "Links a locked action to an unmet condition, with its rdfs:label and, when an action meets it, wtw:unlockedBy." .
+wtw:unlockedBy a owl:ObjectProperty ; rdfs:range wtw:ActionType ; rdfs:comment "The action type of an action that meets an unmet condition." .
 
 wtw:focus a wtw:ActionType ;
     rdfs:label "focus" ;
