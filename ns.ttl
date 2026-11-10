@@ -116,11 +116,21 @@ wtw:Input a owl:Class ; rdfs:comment "The input node of a submitted action." .
 wtw:exposesAction a owl:ObjectProperty ; rdfs:comment "Links a resource or an actor to an action on it." .
 wtw:actionType a owl:ObjectProperty ; rdfs:range wtw:ActionType ; rdfs:comment "The action type of an action." .
 wtw:hasInput a owl:ObjectProperty ; rdfs:range sh:NodeShape ; rdfs:comment "The input shape of an action." .
-wtw:input a owl:ObjectProperty ; rdfs:comment "The pre-filled input of an action." .
+wtw:input a owl:ObjectProperty ; rdfs:comment "The pre-filled input of an action, or the input of an action a ledger entry records." .
 wtw:locksAction a owl:ObjectProperty ; rdfs:comment "Links a resource or an actor to a locked action on it: shown with its unmet conditions, never offered." .
 wtw:LockedAction a owl:Class ; rdfs:comment "An action that is not valid now, with the unmet conditions that keep it locked." .
 wtw:needs a owl:ObjectProperty ; rdfs:comment "Links a locked action to an unmet condition, with its rdfs:label and, when an action meets it, wtw:unlockedBy." .
 wtw:unlockedBy a owl:ObjectProperty ; rdfs:range wtw:ActionType ; rdfs:comment "The action type of an action that meets an unmet condition." .
+wtw:Receipt a owl:Class ; rdfs:comment "What the hypermedia output answers to a submitted action: invoked, refused or failed, with why; wtw:needs per unmet condition of a matching locked action." .
+wtw:status a owl:ObjectProperty ; rdfs:domain wtw:Receipt ; rdfs:comment "Whether the action of a receipt was invoked, refused or failed." .
+wtw:Invoked a owl:NamedIndividual ; rdfs:comment "The status of an action the runtime invoked." .
+wtw:Refused a owl:NamedIndividual ; rdfs:comment "The status of an action the runtime did not invoke: not offered, its resource busy, or its input not conforming." .
+wtw:Failed a owl:NamedIndividual ; rdfs:comment "The status of an action its action port could not invoke." .
+wtw:LedgerEntry a owl:Class ; rdfs:comment "What the runtime writes into every state port about an action it invoked; a blank node, so no resource, read by rule sets and never shown to agents." .
+wtw:actor a owl:ObjectProperty ; rdfs:domain wtw:LedgerEntry ; rdfs:range wtw:Actor ; rdfs:comment "The actor of the action a ledger entry records." .
+wtw:resource a owl:ObjectProperty ; rdfs:domain wtw:LedgerEntry ; rdfs:comment "The resource of the action a ledger entry records." .
+wtw:sequence a owl:DatatypeProperty ; rdfs:domain wtw:LedgerEntry ; rdfs:range xsd:integer ; rdfs:comment "The place of a ledger entry among every action the runtime invoked since it started, from 1." .
+wtw:about a owl:ObjectProperty ; rdfs:domain wtw:Receipt ; rdfs:comment "The resource of an invoked action, given with its properties after the change." .
 
 wtw:focus a wtw:ActionType ;
     rdfs:label "focus" ;
