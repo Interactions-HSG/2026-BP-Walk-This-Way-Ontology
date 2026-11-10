@@ -124,7 +124,7 @@ wtw:unlockedBy a owl:ObjectProperty ; rdfs:range wtw:ActionType ; rdfs:comment "
 wtw:Receipt a owl:Class ; rdfs:comment "What the hypermedia output answers to a submitted action: invoked, refused or failed, with why; wtw:needs per unmet condition of a matching locked action." .
 wtw:status a owl:ObjectProperty ; rdfs:domain wtw:Receipt ; rdfs:comment "Whether the action of a receipt was invoked, refused or failed." .
 wtw:Invoked a owl:NamedIndividual ; rdfs:comment "The status of an action the runtime invoked." .
-wtw:Refused a owl:NamedIndividual ; rdfs:comment "The status of an action the runtime did not invoke: not offered, its resource busy, or its input not conforming." .
+wtw:Refused a owl:NamedIndividual ; rdfs:comment "The status of an action the runtime did not invoke: not offered, the state not brought up to date, or its input not conforming." .
 wtw:Failed a owl:NamedIndividual ; rdfs:comment "The status of an action its action port could not invoke." .
 wtw:LedgerEntry a owl:Class ; rdfs:comment "What the runtime writes into every state port about an action it invoked; a blank node, so no resource, read by rule sets and never shown to agents." .
 wtw:actor a owl:ObjectProperty ; rdfs:domain wtw:LedgerEntry ; rdfs:range wtw:Actor ; rdfs:comment "The actor of the action a ledger entry records." .
