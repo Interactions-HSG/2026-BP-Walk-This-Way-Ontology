@@ -1,4 +1,5 @@
 @prefix wtw:  <https://interactions-hsg.github.io/2026-BP-Walk-This-Way-Ontology/ns.ttl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
@@ -8,8 +9,8 @@
 # The Walk-This-Way vocabulary (ADR 3), published from docs/ns.ttl of the Walk-This-Way repository through the
 # GitHub Pages of the public repository Interactions-HSG/2026-BP-Walk-This-Way-Ontology:
 # the runtime configuration, the adapter settings documents of the example's adapters, the agent
-# register, the type IRIs, the hypermedia output and the runtime's own action types. The shapes at the
-# end validate a runtime configuration, an adapter settings document and an agent register.
+# register, the goals, the type IRIs, the hypermedia output and the runtime's own action types. The shapes at
+# the end validate a runtime configuration, an adapter settings document, an agent register and the goals.
 
 <https://interactions-hsg.github.io/2026-BP-Walk-This-Way-Ontology/ns.ttl> a owl:Ontology ;
     rdfs:label "Walk-This-Way vocabulary" .
@@ -28,6 +29,8 @@ wtw:runtime a owl:ObjectProperty ; rdfs:domain wtw:RuntimeConfiguration ;
     rdfs:comment "The IRI of the runtime." .
 wtw:httpEndpoint a owl:DatatypeProperty ; rdfs:domain wtw:RuntimeConfiguration ; rdfs:range xsd:string ;
     rdfs:comment "The host and port the runtime's hypermedia output listens on." .
+wtw:goals a owl:ObjectProperty ; rdfs:domain wtw:RuntimeConfiguration ;
+    rdfs:comment "A document of goals the runtime tracks (ADR 17)." .
 
 wtw:Alignment a owl:Class ;
     rdfs:comment "Alignment documents for a single state port." .
@@ -96,6 +99,35 @@ wtw:apiKeyVariable a owl:DatatypeProperty ; rdfs:domain wtw:LlmEndpoint ; rdfs:r
 wtw:Actor a owl:Class ;
     rdfs:comment "An IRI an agent or a human acts as; further facts about it use the shared vocabulary of the alignment." .
 
+# --- goals (ADR 17) ---
+
+wtw:Goal a owl:Class ;
+    rdfs:comment "What an actor is to reach: an ordered list of goal steps whose progress the runtime tracks in the state." .
+wtw:GoalStep a owl:Class ;
+    rdfs:comment "A step of a goal: a label the agent reads, a condition and the resources it is about." .
+wtw:assignedTo a owl:ObjectProperty ; rdfs:range wtw:Actor ;
+    rdfs:comment "Links a resource, such as a goal, to an actor that always observes it." .
+wtw:steps a owl:ObjectProperty ; rdfs:domain wtw:Goal ; rdfs:range rdf:List ;
+    rdfs:comment "The RDF list of the goal steps of a goal, in order." .
+wtw:evaluatedBy a owl:ObjectProperty ; rdfs:domain wtw:Goal ;
+    rdfs:comment "The reasoner, by adapter IRI, that evaluates the conditions of the goal steps of a goal." .
+wtw:shown a owl:DatatypeProperty ; rdfs:domain wtw:Goal ; rdfs:range xsd:boolean ;
+    rdfs:comment "Whether environment contexts show a goal; true when missing. A goal not shown is tracked all the same." .
+wtw:condition a owl:DatatypeProperty ; rdfs:domain wtw:GoalStep ; rdfs:range xsd:string ;
+    rdfs:comment "When a goal step is done, in the rule language of the reasoner of its goal, for N3 a formula { ... }." .
+wtw:about a owl:ObjectProperty ;
+    rdfs:comment "A resource a goal step is about, or the resource of an invoked action that a receipt gives with its properties after the change." .
+wtw:currentStep a owl:ObjectProperty ; rdfs:domain wtw:Goal ; rdfs:range wtw:GoalStep ;
+    rdfs:comment "The first goal step of a goal that is not done; a goal that is done has none." .
+wtw:doneStep a owl:ObjectProperty ; rdfs:domain wtw:Goal ;
+    rdfs:comment "A blank node per goal step done, with wtw:step, wtw:at and wtw:sequence." .
+wtw:step a owl:ObjectProperty ; rdfs:range wtw:GoalStep ;
+    rdfs:comment "The goal step a wtw:doneStep node records." .
+wtw:at a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:comment "When a goal step was done, in UTC." .
+wtw:Open a owl:NamedIndividual ; rdfs:comment "The status of a goal with a goal step not done." .
+wtw:Done a owl:NamedIndividual ; rdfs:comment "The status of a goal whose goal steps are all done." .
+
 # --- type IRIs ---
 
 wtw:TypeIri a owl:Class ;
@@ -122,15 +154,14 @@ wtw:LockedAction a owl:Class ; rdfs:comment "An action that is not valid now, wi
 wtw:needs a owl:ObjectProperty ; rdfs:comment "Links a locked action to an unmet condition, with its rdfs:label and, when an action meets it, wtw:unlockedBy." .
 wtw:unlockedBy a owl:ObjectProperty ; rdfs:range wtw:ActionType ; rdfs:comment "The action type of an action that meets an unmet condition." .
 wtw:Receipt a owl:Class ; rdfs:comment "What the hypermedia output answers to a submitted action: invoked, refused or failed, with why; wtw:needs per unmet condition of a matching locked action." .
-wtw:status a owl:ObjectProperty ; rdfs:domain wtw:Receipt ; rdfs:comment "Whether the action of a receipt was invoked, refused or failed." .
+wtw:status a owl:ObjectProperty ; rdfs:comment "Whether the action of a receipt was invoked, refused or failed, or whether a goal is open or done." .
 wtw:Invoked a owl:NamedIndividual ; rdfs:comment "The status of an action the runtime invoked." .
 wtw:Refused a owl:NamedIndividual ; rdfs:comment "The status of an action the runtime did not invoke: not offered, the state not brought up to date, or its input not conforming." .
 wtw:Failed a owl:NamedIndividual ; rdfs:comment "The status of an action its action port could not invoke." .
 wtw:LedgerEntry a owl:Class ; rdfs:comment "What the runtime writes into every state port about an action it invoked; a blank node, so no resource, read by rule sets and never shown to agents." .
 wtw:actor a owl:ObjectProperty ; rdfs:domain wtw:LedgerEntry ; rdfs:range wtw:Actor ; rdfs:comment "The actor of the action a ledger entry records." .
 wtw:resource a owl:ObjectProperty ; rdfs:domain wtw:LedgerEntry ; rdfs:comment "The resource of the action a ledger entry records." .
-wtw:sequence a owl:DatatypeProperty ; rdfs:domain wtw:LedgerEntry ; rdfs:range xsd:integer ; rdfs:comment "The place of a ledger entry among every action the runtime invoked since it started, from 1." .
-wtw:about a owl:ObjectProperty ; rdfs:domain wtw:Receipt ; rdfs:comment "The resource of an invoked action, given with its properties after the change." .
+wtw:sequence a owl:DatatypeProperty ; rdfs:range xsd:integer ; rdfs:comment "The place of a ledger entry among every action the runtime invoked since it started, from 1, or for a goal step done the number of actions the runtime had invoked by then." .
 
 wtw:focus a wtw:ActionType ;
     rdfs:label "focus" ;
@@ -153,7 +184,8 @@ wtw:RuntimeConfigurationShape a sh:NodeShape ;
                 [ sh:path wtw:pollSeconds ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minExclusive 0 ] ,
                 [ sh:path wtw:adapter ; sh:minCount 1 ; sh:nodeKind sh:IRI ] ,
                 [ sh:path wtw:alignment ; sh:node wtw:AlignmentShape ] ,
-                [ sh:path wtw:agentRegister ; sh:maxCount 1 ; sh:nodeKind sh:IRI ] .
+                [ sh:path wtw:agentRegister ; sh:maxCount 1 ; sh:nodeKind sh:IRI ] ,
+                [ sh:path wtw:goals ; sh:nodeKind sh:IRI ] .
 
 wtw:AlignmentShape a sh:NodeShape ;
     sh:property [ sh:path wtw:statePort ; sh:minCount 1 ; sh:maxCount 1 ; sh:nodeKind sh:IRI ] ,
@@ -193,3 +225,21 @@ wtw:LlmEndpointShape a sh:NodeShape ;
 wtw:ActorShape a sh:NodeShape ;
     sh:targetClass wtw:Actor ;
     sh:nodeKind sh:IRI .
+
+wtw:GoalShape a sh:NodeShape ;
+    sh:targetClass wtw:Goal ;
+    sh:nodeKind sh:IRI ;
+    sh:property [ sh:path rdfs:label ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ,
+                [ sh:path wtw:assignedTo ; sh:minCount 1 ; sh:nodeKind sh:IRI ] ,
+                [ sh:path wtw:evaluatedBy ; sh:minCount 1 ; sh:maxCount 1 ; sh:nodeKind sh:IRI ] ,
+                [ sh:path wtw:shown ; sh:maxCount 1 ; sh:datatype xsd:boolean ] ,
+                [ sh:path wtw:steps ; sh:minCount 1 ; sh:maxCount 1 ] ,
+                [ sh:path ( wtw:steps [ sh:zeroOrMorePath rdf:rest ] rdf:first ) ; sh:minCount 1 ;
+                  sh:class wtw:GoalStep ; sh:node wtw:GoalStepShape ] .
+
+wtw:GoalStepShape a sh:NodeShape ;
+    sh:targetClass wtw:GoalStep ;
+    sh:nodeKind sh:IRI ;
+    sh:property [ sh:path rdfs:label ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ,
+                [ sh:path wtw:condition ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ,
+                [ sh:path wtw:about ; sh:nodeKind sh:IRI ] .
